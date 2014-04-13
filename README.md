@@ -1,4 +1,4 @@
-word-particles
+Word Particles
 ==============
 
 Words that burst into particles
