@@ -1,0 +1,166 @@
+
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Yes!</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				background-color: #000000;
+				margin: 0px;
+				overflow: hidden;
+				font-family:Monospace;
+				font-size:13px;
+				text-align:center;
+				font-weight: bold;
+				text-align:center;
+			}
+
+			a {
+				color:#0078ff;
+			}
+
+			#info {
+				color: #fff;
+				position: absolute;
+				top: 0px; width: 100%;
+				padding: 5px;
+				z-index: 100;
+			}
+
+		</style>
+	</head>
+	<body>
+		<script src="three.min.js"></script>
+		<script src="pixels.js"></script>
+
+		<script>
+			var container;
+			var camera, scene, renderer, particleSystem, particles, clock;
+			var mouseX = 0, mouseY = 0;
+
+			var windowHalfX = window.innerWidth / 2;
+			var windowHalfY = window.innerHeight / 2;
+
+			var partCount = 10000;
+			var maxColor = 80;
+			var topVel = 0;
+
+			init();
+			animate();
+
+			function randRange(min, max){
+    			return Math.random() * (max - min) + min;
+			}
+
+			function init() {
+
+				container = document.createElement( 'div' );
+				document.body.appendChild( container );
+
+				camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 3000 );
+				camera.position.z = 2000;
+
+				scene = new THREE.Scene();
+				//scene.fog = new THREE.FogExp2( 0x000000, 0.0007 );
+				clock = new THREE.Clock();
+
+				particles = new THREE.Geometry();
+
+				for ( var i = 0; i < partCount; i ++ ) {
+
+					var particle = new THREE.Vector3();
+					var index = Math.floor((Math.random() * pixel_count-1)+1);
+					var cord = word_pixels[index];
+					var mulitplier = 5;
+					particle.x = (cord[0] * mulitplier)-(image_width/2)*mulitplier;
+					particle.y = -(cord[1] * mulitplier)+(image_height/2)*mulitplier;
+					//particle.z = Math.random() * 1000 - 500;
+					particle.velocity = new THREE.Vector3(randRange(-1,1), randRange(-1,1), 0);
+					particle.accleration = new THREE.Vector3(randRange(-5,5), randRange(-5,5), 0);
+
+					particles.vertices.push( particle );
+					var color = new THREE.Color( 0xffffff )
+					particles.colors[i] = color;
+
+				}
+
+				var material = new THREE.ParticleSystemMaterial( { size: 10, vertexColors: THREE.VertexColors } );
+
+				particleSystem = new THREE.ParticleSystem( particles, material );
+				particleSystem.sortParticles = true;
+
+				scene.add( particleSystem );
+
+
+				renderer = new THREE.WebGLRenderer({ antialiasing: true });
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				container.appendChild( renderer.domElement );
+
+				//document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+				window.addEventListener( 'resize', onWindowResize, false );
+
+			}
+
+			function onWindowResize() {
+
+				windowHalfX = window.innerWidth / 2;
+				windowHalfY = window.innerHeight / 2;
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+			}
+
+			function onDocumentMouseMove( event ) {
+
+				mouseX = event.clientX - windowHalfX;
+				mouseY = event.clientY - windowHalfY;
+
+			}
+
+			function animate() {
+
+				requestAnimationFrame( animate );
+				render(clock.getDelta());
+			}
+
+			function render(dt) {
+				camera.lookAt( scene.position );
+
+				for (var i = 0; i < partCount; i ++ ) {
+					var particle = particles.vertices[i];
+					var color = particles.colors[i];
+
+
+					//recalculate values
+					particle.y += particle.velocity.y * dt;
+					particle.velocity.y += particle.accleration.y * dt;
+
+					particle.x += particle.velocity.x * dt;
+					particle.velocity.x += particle.accleration.x * dt;
+
+					var absVel = Math.abs(particle.velocity.y) + Math.abs(particle.velocity.x)
+					if(absVel >= topVel)
+						topVel = absVel;
+
+					//set color
+					var scaledVel = 1-(absVel / topVel);
+					var h = (scaledVel * maxColor) / 360;
+					color.setHSL(h, 1, 0.5);
+					
+				}
+
+				particleSystem.geometry.__dirtyVertices = true;
+
+				renderer.render( scene, camera );
+
+			}
+
+
+		</script>
+	</body>
+</html>
