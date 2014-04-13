@@ -34,6 +34,7 @@
 	<body>
 		<script src="three.min.js"></script>
 		<script src="pixels.js"></script>
+		<script src="Detector.js"></script>
 
 		<script>
 			var container;
@@ -93,7 +94,7 @@
 
 				scene.add( particleSystem );
 
-
+				Detector.addGetWebGLMessage();
 				renderer = new THREE.WebGLRenderer({ antialiasing: true });
 				renderer.setSize( window.innerWidth, window.innerHeight );
 				container.appendChild( renderer.domElement );
