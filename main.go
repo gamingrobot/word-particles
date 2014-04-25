@@ -17,6 +17,7 @@ func main() {
 	}
 	img, _, err := decode(os.Args[1])
 	if err != nil {
+		fmt.Println("There was a error in processing that image file.")
 		return
 	}
 	count := 0
